@@ -7,9 +7,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -20,16 +20,17 @@ load_dotenv(BASE_DIR / ".env")
 DB = os.getenv("DB_PATH", "journey.db")
 
 app = FastAPI(title="User Journey Analyzer")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=".*",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 def db():
     c = sqlite3.connect(DB)
-    # Tabela de sites cadastrados com chave secreta
     c.execute("""CREATE TABLE IF NOT EXISTS sites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         site_id TEXT UNIQUE,
@@ -39,13 +40,11 @@ def db():
         created_at TEXT
     )""")
 
-    # Tabela de eventos
     c.execute("""CREATE TABLE IF NOT EXISTS events(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         site_id TEXT DEFAULT 'default',
         session_id TEXT, url TEXT, ts INTEGER, type TEXT, payload TEXT, created TEXT)""")
     
-    # Garante que a coluna site_id exista caso o banco tenha sido criado em versão anterior
     try:
         c.execute("ALTER TABLE events ADD COLUMN site_id TEXT DEFAULT 'default'")
     except Exception:
@@ -77,7 +76,6 @@ def create_site(data: CreateSite):
     domain = clean_url.split("//")[-1].split("/")[0]
     site_name = (data.name or "").strip() or domain
 
-    # Gera identificador do site e chave de acesso privada
     site_id = f"site_{uuid.uuid4().hex[:8]}"
     secret_key = f"sec_{secrets.token_urlsafe(16)}"
     created_at = datetime.utcnow().isoformat()
@@ -121,31 +119,40 @@ def auth_site(data: AuthKey):
     }
 
 @app.post("/api/events")
-async def ingest(body: Ingest):
+async def ingest(request: Request):
+    raw_body = await request.body()
+    try:
+        data = json.loads(raw_body.decode("utf-8"))
+    except Exception:
+        return JSONResponse({"ok": False, "error": "Invalid JSON"}, status_code=400)
+
+    session_id = data.get("sessionId", "anon")
+    url = data.get("url", "/")
+    events = data.get("events", [])
+    site_id = data.get("siteId", "default")
+
     c = db()
-    site_id = body.siteId or "default"
-    for e in body.events:
+    for e in events:
         c.execute(
             "INSERT INTO events(site_id,session_id,url,ts,type,payload,created) VALUES(?,?,?,?,?,?,?)",
-            (site_id, body.sessionId, e.get("url", body.url), e.get("ts"), e.get("type"), json.dumps(e), datetime.utcnow().isoformat())
+            (site_id, session_id, e.get("url", url), e.get("ts"), e.get("type"), json.dumps(e), datetime.utcnow().isoformat())
         )
     c.commit()
     c.close()
-    return {"ok": True, "count": len(body.events)}
+    return {"ok": True, "count": len(events)}
 
 @app.get("/api/sessions")
 def sessions(secret_key: Optional[str] = Query(None)):
     c = db()
     target_site_id = "default"
 
-    # Se uma chave secreta for fornecida, busca apenas as sessões daquele site
     if secret_key and secret_key.strip() != "default":
         row = c.execute("SELECT site_id FROM sites WHERE secret_key=?", (secret_key.strip(),)).fetchone()
         if row:
             target_site_id = row[0]
         else:
             c.close()
-            return []  # Chave inválida não visualiza nada
+            return []
 
     rows = c.execute("""
         SELECT session_id, COUNT(*), MIN(ts), MAX(ts), MAX(url)
@@ -181,13 +188,15 @@ async def analyze(sid: str, provider: Optional[str] = Query(None)):
     result = await analyze_session(sid, provider=provider)
     return result
 
-# Rota para disponibilizar o script do tracker para os sites dos clientes
 @app.get("/tracker.js")
 def get_tracker_script():
     tracker_path = BASE_DIR / "tracker" / "tracker.js"
-    return FileResponse(tracker_path, media_type="application/javascript")
+    return FileResponse(
+        tracker_path,
+        media_type="application/javascript",
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
 
-# Servir a interface web (Dashboard) e página de demonstração
 @app.get("/", response_class=HTMLResponse)
 def serve_dashboard():
     dashboard_path = BASE_DIR / "frontend" / "index.html"
