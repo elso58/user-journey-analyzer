@@ -54,10 +54,11 @@
         </select>
       </div>
 
-      <a href="/demo" target="_blank" class="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
-        <i class="fa-solid fa-laptop-code"></i>
-        <span>Simulador</span>
-      </a>
+      <!-- Botão de Limpar Histórico -->
+      <button onclick="handleClearHistory()" title="Apagar todo o histórico de análises" class="flex items-center gap-1.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/60 text-rose-300 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+        <i class="fa-solid fa-trash-can text-xs"></i>
+        <span class="hidden md:inline">Limpar Histórico</span>
+      </button>
 
       <button id="btnRefresh" title="Atualizar sessões" class="w-8 h-8 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
         <i class="fa-solid fa-arrows-rotate text-xs"></i>
@@ -104,10 +105,6 @@
             <i class="fa-solid fa-plus"></i>
             <span>Cadastrar Novo Site</span>
           </button>
-          <a href="/demo" target="_blank" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium px-4 py-2 rounded-lg transition">
-            <i class="fa-solid fa-play"></i>
-            <span>Testar no Simulador</span>
-          </a>
         </div>
       </div>
 
@@ -438,6 +435,34 @@
       }
     }
 
+    // Função para limpar o histórico
+    async function handleClearHistory() {
+      const siteNome = currentSite ? (currentSite.name || currentSite.url) : "Ambiente de Testes";
+      const confirmou = confirm(`Tem certeza que deseja apagar todo o histórico de análises de "${siteNome}"?\n\nEssa ação não pode ser desfeita.`);
+      if (!confirmou) return;
+
+      try {
+        let url = "/api/sessions/clear";
+        if (currentSite && currentSite.secret_key) {
+          url += `?secret_key=${encodeURIComponent(currentSite.secret_key)}`;
+        }
+        const res = await fetch(url, { method: "DELETE" });
+        const data = await res.json();
+
+        if (data.ok) {
+          alert("Histórico apagado com sucesso!");
+          currentSessionId = null;
+          emptyState.classList.remove("hidden");
+          sessionContent.classList.add("hidden");
+          loadSessions();
+        } else {
+          alert("Erro ao limpar histórico: " + (data.error || ""));
+        }
+      } catch(e) {
+        alert("Erro de conexão ao tentar limpar o histórico.");
+      }
+    }
+
     function renderSessions(list) {
       const q = (sessionSearch.value || "").toLowerCase();
       const filtered = list.filter(s => s.session_id.toLowerCase().includes(q) || (s.last_url && s.last_url.toLowerCase().includes(q)));
@@ -483,7 +508,7 @@
 
             <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/80 text-xs">
               <span class="font-semibold text-slate-200 flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded border border-slate-800 text-xs">
-                <i class="fa-regular fa-clock text-indigo-400 text-xs"></i>
+                <i class="fa-regular fa-clock text-indigo-400"></i>
                 ${timeFormatted}
               </span>
               <span class="font-mono text-[11px] text-slate-500 truncate max-w-[120px]">
@@ -574,6 +599,10 @@
           case "page_leave":
             badge = { icon: "fa-right-from-bracket", color: "bg-red-950 text-red-400 border border-red-800", label: "Saída" };
             desc = `Usuário saiu da página. Scroll máx: ${data.maxScroll || 0}%`;
+            break;
+          case "compra_concluida":
+            badge = { icon: "fa-circle-check", color: "bg-emerald-900 text-emerald-300 border border-emerald-600", label: "Compra Concluída 🎉" };
+            desc = `<strong class="text-emerald-300">VENDA REALIZADA:</strong> ${data.produto || 'Produto'} (${data.valor || ''}) - ${data.detalhe || 'Cliente finalizou o pagamento!'}`;
             break;
           default:
             desc = JSON.stringify(data);
