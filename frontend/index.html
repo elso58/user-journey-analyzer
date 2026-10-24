@@ -19,8 +19,6 @@
 
   <!-- Top Navigation Bar -->
   <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40">
-    
-    <!-- Logo & Brand -->
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
         <i class="fa-solid fa-route text-white text-base"></i>
@@ -33,7 +31,6 @@
       </div>
     </div>
 
-    <!-- Active Site Info & Authentication Status -->
     <div class="flex items-center gap-3">
       <div id="siteStatusBadge" class="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -44,13 +41,11 @@
         </button>
       </div>
 
-      <!-- Button: Cadastrar Novo Site -->
       <button onclick="openRegisterModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg shadow-sm transition">
         <i class="fa-solid fa-plus"></i>
         <span>Cadastrar Site</span>
       </button>
 
-      <!-- LLM Provider Selector -->
       <div class="hidden sm:flex items-center gap-2 bg-slate-800/90 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
         <span class="text-slate-400 font-medium"><i class="fa-solid fa-microchip mr-1"></i> IA:</span>
         <select id="providerSelect" class="bg-transparent text-white font-medium focus:outline-none cursor-pointer">
@@ -59,13 +54,11 @@
         </select>
       </div>
 
-      <!-- Demo Simulator Button -->
       <a href="/demo" target="_blank" class="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
         <i class="fa-solid fa-laptop-code"></i>
         <span>Simulador</span>
       </a>
 
-      <!-- Refresh Sessions Button -->
       <button id="btnRefresh" title="Atualizar sessões" class="w-8 h-8 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
         <i class="fa-solid fa-arrows-rotate text-xs"></i>
       </button>
@@ -79,17 +72,16 @@
     <aside class="w-80 lg:w-96 border-r border-slate-800 bg-slate-900/50 flex flex-col h-[calc(100vh-57px)]">
       <div class="p-4 border-b border-slate-800/80">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Sessões deste Site</span>
-          <span id="sessionCountBadge" class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Sessões deste Site</span>
+          <span id="sessionCountBadge" class="text-xs font-mono bg-indigo-950 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-800 font-bold">0</span>
         </div>
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-          <input type="text" id="sessionSearch" placeholder="Filtrar por URL ou ID..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+          <input type="text" id="sessionSearch" placeholder="Filtrar por URL ou ID..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
         </div>
       </div>
 
-      <!-- Session list container -->
-      <div id="sessionList" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-2">
+      <div id="sessionList" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-2.5">
         <div class="text-center py-10 text-slate-500 text-xs">
           <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
           <p>Carregando sessões...</p>
@@ -100,7 +92,7 @@
     <!-- Right Area: Session Details & AI Analysis -->
     <main class="flex-1 flex flex-col h-[calc(100vh-57px)] overflow-hidden bg-slate-950">
       
-      <!-- Empty State (When no session is selected) -->
+      <!-- Empty State -->
       <div id="emptyState" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 mb-4 shadow-inner">
           <i class="fa-solid fa-chart-line text-2xl"></i>
@@ -122,7 +114,6 @@
       <!-- Session Detail Content -->
       <div id="sessionContent" class="flex-1 flex flex-col hidden overflow-hidden">
         
-        <!-- Session Header Bar -->
         <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex flex-wrap items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2">
@@ -131,19 +122,17 @@
               <button onclick="copyCurrentSid()" class="text-slate-500 hover:text-slate-300 text-xs ml-1" title="Copiar ID"><i class="fa-regular fa-copy"></i></button>
             </div>
             <div class="flex items-center gap-4 mt-1.5 text-xs text-slate-400">
-              <span id="currentUrl" class="truncate max-w-md text-slate-300"><i class="fa-solid fa-link text-slate-500 mr-1"></i> -</span>
-              <span><i class="fa-solid fa-bolt text-slate-500 mr-1"></i> <b id="currentEventCount" class="text-slate-200">0</b> eventos</span>
+              <span id="currentUrl" class="truncate max-w-md text-slate-300 font-medium"><i class="fa-solid fa-link text-slate-500 mr-1"></i> -</span>
+              <span><i class="fa-solid fa-bolt text-indigo-400 mr-1"></i> <b id="currentEventCount" class="text-slate-200">0</b> eventos</span>
             </div>
           </div>
 
-          <!-- Analyze Trigger Button -->
           <button id="btnAnalyze" class="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-lg shadow-indigo-600/20 transition active:scale-95 disabled:opacity-50">
             <i class="fa-solid fa-brain"></i>
             <span>Gerar Parecer com IA</span>
           </button>
         </div>
 
-        <!-- Tabs Navigation -->
         <div class="flex border-b border-slate-800 bg-slate-900/20 px-4">
           <button id="tabBtnReport" class="px-4 py-2.5 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2">
             <i class="fa-solid fa-file-invoice text-indigo-400"></i>
@@ -155,13 +144,9 @@
           </button>
         </div>
 
-        <!-- Tab Body Container -->
         <div class="flex-1 overflow-y-auto custom-scroll p-6">
           
-          <!-- TAB 1: AI Report -->
           <div id="tabReport" class="space-y-6">
-            
-            <!-- Not Analyzed Banner -->
             <div id="reportPlaceholder" class="p-8 border border-dashed border-slate-800 rounded-xl text-center bg-slate-900/20">
               <div class="w-12 h-12 rounded-full bg-indigo-950/60 border border-indigo-800/60 text-indigo-400 flex items-center justify-center mx-auto mb-3">
                 <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
@@ -173,7 +158,6 @@
               </button>
             </div>
 
-            <!-- Loading Spinner State -->
             <div id="reportLoading" class="hidden p-12 text-center">
               <div class="relative w-16 h-16 mx-auto mb-4">
                 <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
@@ -184,10 +168,7 @@
               <p class="text-xs text-slate-500 mt-1">Identificando o que o visitante tentou fazer e onde ele encontrou dificuldades.</p>
             </div>
 
-            <!-- AI Output Card View -->
             <div id="reportContainer" class="hidden space-y-5">
-              
-              <!-- Report Meta Header -->
               <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
@@ -195,7 +176,7 @@
                   </div>
                   <div>
                     <h3 class="text-sm font-bold text-slate-100">Diagnóstico Concluído</h3>
-                    <p id="reportProviderBadge" class="text-xs text-slate-400">Modelo utilizado: Google Gemini</p>
+                    <p id="reportProviderBadge" class="text-xs text-slate-400">Modelo: Google Gemini</p>
                   </div>
                 </div>
                 <div>
@@ -203,7 +184,6 @@
                 </div>
               </div>
 
-              <!-- Comportamento Observado -->
               <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2 mb-2">
                   <i class="fa-solid fa-eye text-cyan-400"></i>
@@ -212,10 +192,7 @@
                 <p id="reportObserved" class="text-sm text-slate-200 leading-relaxed"></p>
               </div>
 
-              <!-- Possíveis Causas e Evidências Grid -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
-                <!-- Possíveis Causas -->
                 <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
                   <h4 class="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-3">
                     <i class="fa-solid fa-lightbulb"></i>
@@ -224,7 +201,6 @@
                   <ul id="reportCauses" class="space-y-2 text-sm text-slate-300"></ul>
                 </div>
 
-                <!-- Evidências -->
                 <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
                   <h4 class="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-2 mb-3">
                     <i class="fa-solid fa-magnifying-glass-chart"></i>
@@ -234,7 +210,6 @@
                 </div>
               </div>
 
-              <!-- Recomendações de Melhoria -->
               <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-2 mb-3">
                   <i class="fa-solid fa-clipboard-check"></i>
@@ -243,7 +218,6 @@
                 <ul id="reportRecommendations" class="space-y-2 text-sm text-slate-200"></ul>
               </div>
 
-              <!-- Raw JSON Details Collapse -->
               <details class="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4">
                 <summary class="text-xs text-slate-400 font-mono cursor-pointer hover:text-slate-200">
                   Ver resposta técnica em JSON
@@ -253,7 +227,6 @@
             </div>
           </div>
 
-          <!-- TAB 2: Timeline of Events -->
           <div id="tabTimeline" class="hidden space-y-3">
             <div class="flex items-center justify-between pb-3 border-b border-slate-800">
               <span class="text-xs font-medium text-slate-400">Sequência cronológica da navegação</span>
@@ -274,7 +247,6 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <!-- Step 1: Input URL -->
       <div id="registerStepForm">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
@@ -307,14 +279,12 @@
         </form>
       </div>
 
-      <!-- Step 2: Generated Keys & Installation Instructions -->
       <div id="registerStepSuccess" class="hidden space-y-4">
         <div class="flex items-center gap-2 text-emerald-400 text-sm font-bold">
           <i class="fa-solid fa-circle-check text-base"></i>
           <span>Site Cadastrado com Sucesso!</span>
         </div>
 
-        <!-- Chave Privada -->
         <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/50">
           <div class="flex items-center justify-between mb-1">
             <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
@@ -329,7 +299,6 @@
           </div>
         </div>
 
-        <!-- Código para Colar no Site -->
         <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
           <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1 mb-1">
             <i class="fa-solid fa-code text-indigo-400"></i> Código de Rastreamento (Todas as Páginas)
@@ -390,7 +359,6 @@
     let currentSite = JSON.parse(localStorage.getItem("uj_current_site") || "null");
     let newlyCreatedSite = null;
 
-    // Elements
     const sessionListEl = document.getElementById("sessionList");
     const sessionCountBadge = document.getElementById("sessionCountBadge");
     const sessionSearch = document.getElementById("sessionSearch");
@@ -404,7 +372,6 @@
     const providerSelect = document.getElementById("providerSelect");
     const activeSiteName = document.getElementById("activeSiteName");
 
-    // Modals
     const modalRegister = document.getElementById("modalRegister");
     const modalAuth = document.getElementById("modalAuth");
     const registerStepForm = document.getElementById("registerStepForm");
@@ -412,13 +379,11 @@
     const createdSecretKey = document.getElementById("createdSecretKey");
     const createdTrackerCode = document.getElementById("createdTrackerCode");
 
-    // Tabs
     const tabBtnReport = document.getElementById("tabBtnReport");
     const tabBtnTimeline = document.getElementById("tabBtnTimeline");
     const tabReport = document.getElementById("tabReport");
     const tabTimeline = document.getElementById("tabTimeline");
 
-    // Report items
     const reportPlaceholder = document.getElementById("reportPlaceholder");
     const reportLoading = document.getElementById("reportLoading");
     const reportContainer = document.getElementById("reportContainer");
@@ -432,17 +397,15 @@
     const timelineEvents = document.getElementById("timelineEvents");
     const timelineCount = document.getElementById("timelineCount");
 
-    // Initialize Site view
     function updateSiteBadge() {
       if (currentSite && currentSite.secret_key) {
-        activeSiteName.innerText = `${currentSite.name || currentSite.url}`;
+        activeSiteName.innerText = currentSite.name || currentSite.url;
         activeSiteName.title = `Chave: ${currentSite.secret_key}`;
       } else {
         activeSiteName.innerText = "Ambiente de Testes (Demo)";
       }
     }
 
-    // Switch Tabs
     tabBtnReport.addEventListener("click", () => switchTab("report"));
     tabBtnTimeline.addEventListener("click", () => switchTab("timeline"));
 
@@ -460,7 +423,6 @@
       }
     }
 
-    // Load Sessions (filtered by secret key if authenticated)
     async function loadSessions() {
       try {
         let url = "/api/sessions";
@@ -469,8 +431,8 @@
         }
         const res = await fetch(url);
         const data = await res.json();
-        sessionsCache = data;
-        renderSessions(data);
+        sessionsCache = Array.isArray(data) ? data : [];
+        renderSessions(sessionsCache);
       } catch (err) {
         sessionListEl.innerHTML = `<div class="p-4 text-center text-xs text-rose-400">Falha ao carregar sessões. Verifique o servidor.</div>`;
       }
@@ -491,18 +453,46 @@
         return;
       }
 
-              let rawEvidences = data.evidencias || [];
-        if (!Array.isArray(rawEvidences)) rawEvidences = [rawEvidences];
+      sessionListEl.innerHTML = filtered.map(s => {
+        const isSelected = s.session_id === currentSessionId;
+        const timeFormatted = s.last_active ? new Date(s.last_active).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "--:--";
         
-        // Se a lista de evidências veio vazia, tenta extrair de dentro das causas
-        if (rawEvidences.length === 0 || (rawEvidences.length === 1 && !rawEvidences[0])) {
-          rawEvidences = (data.possiveis_causas || []).flatMap(c => (typeof c === 'object' && c.evidencias) ? c.evidencias : []);
-        }
-        if (rawEvidences.length === 0) {
-          rawEvidences = ["O visitante realizou rolagem pela página e clicou nos botões de oferta e dúvidas antes de sair."];
-        }
+        let displayUrl = s.last_url || "/";
+        try {
+          const parsed = new URL(s.last_url);
+          displayUrl = parsed.hostname + (parsed.pathname !== '/' ? parsed.pathname : '');
+        } catch(e) {}
 
-        const evidences = rawEvidences.filter(e => e && String(e).trim().length > 0);
+        return `
+          <div onclick="selectSession('${s.session_id}')" class="p-3.5 rounded-xl border cursor-pointer transition ${
+            isSelected 
+              ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/50' 
+              : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60 text-slate-200'
+          }">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2 truncate">
+                <i class="fa-solid fa-globe text-indigo-400 text-xs"></i>
+                <span class="font-bold text-sm tracking-tight text-white truncate" title="${s.last_url || ''}">
+                  ${displayUrl}
+                </span>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30 shrink-0">
+                ${s.events} ev
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/80 text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded border border-slate-800 text-xs">
+                <i class="fa-regular fa-clock text-indigo-400 text-xs"></i>
+                ${timeFormatted}
+              </span>
+              <span class="font-mono text-[11px] text-slate-500 truncate max-w-[120px]">
+                #${s.session_id.slice(0, 8)}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     sessionSearch.addEventListener("input", () => renderSessions(sessionsCache));
@@ -511,7 +501,6 @@
       loadSessions().finally(() => btnRefresh.querySelector("i").classList.remove("fa-spin"));
     });
 
-    // Select a session
     async function selectSession(sid) {
       currentSessionId = sid;
       renderSessions(sessionsCache);
@@ -603,7 +592,6 @@
       }).join("");
     }
 
-    // Trigger AI analysis
     async function triggerAnalyze() {
       if (!currentSessionId) return;
 
@@ -639,7 +627,7 @@
 
         reportObserved.innerText = data.comportamento_observado || "Não especificado";
 
-                function formatItem(item) {
+        function formatItem(item) {
           if (!item) return "";
           if (typeof item === 'object') {
             return item.evidencia || item.ponto || item.hipotese || item.descricao || item.texto || item.acao || Object.values(item).join(" - ");
@@ -655,7 +643,16 @@
           </li>
         `).join("");
 
-        const evidences = Array.isArray(data.evidencias) ? data.evidencias : [data.evidencias];
+        let rawEvidences = data.evidencias || [];
+        if (!Array.isArray(rawEvidences)) rawEvidences = [rawEvidences];
+        if (rawEvidences.length === 0 || (rawEvidences.length === 1 && !rawEvidences[0])) {
+          rawEvidences = (data.possiveis_causas || []).flatMap(c => (typeof c === 'object' && c.evidencias) ? c.evidencias : []);
+        }
+        if (rawEvidences.length === 0) {
+          rawEvidences = ["O visitante realizou rolagem pela página e clicou nos botões de oferta e dúvidas antes de sair."];
+        }
+
+        const evidences = rawEvidences.filter(e => e && String(e).trim().length > 0);
         reportEvidence.innerHTML = evidences.map(e => `
           <li class="flex items-start gap-2">
             <span class="text-indigo-400 mt-1">•</span>
@@ -691,7 +688,6 @@
       }
     }
 
-    // Modal Handlers
     function openRegisterModal() {
       registerStepForm.classList.remove("hidden");
       registerStepSuccess.classList.add("hidden");
@@ -812,7 +808,6 @@
       alert("Retornado ao Ambiente Padrão de Testes.");
     }
 
-    // Inicialização
     updateSiteBadge();
     loadSessions();
     setInterval(loadSessions, 6000);
