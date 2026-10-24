@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS Landing Page - Site de Demonstração (Tracker Ativo)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-[160vh]">
+
+  <!-- Top Tracker Notification Banner -->
+  <div class="bg-indigo-600/90 text-white text-xs py-2 px-4 text-center font-medium sticky top-0 z-50 flex items-center justify-center gap-2 shadow-md">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span><strong>Tracker Conectado:</strong> Suas ações nesta página (cliques, scroll, erros, formulários) estão sendo gravadas e enviadas ao backend.</span>
+    <a href="/" target="_blank" class="underline ml-2 font-bold hover:text-indigo-200">Ver no Dashboard &rarr;</a>
+  </div>
+
+  <!-- Navbar -->
+  <header class="border-b border-slate-800 bg-slate-950/60 backdrop-blur px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-black text-white">X</div>
+      <span class="font-bold text-lg">CloudFlow App</span>
+    </div>
+    <nav class="flex items-center gap-6 text-sm text-slate-400">
+      <a href="#features" class="hover:text-white transition">Recursos</a>
+      <a href="#pricing" class="hover:text-white transition">Preços</a>
+      <a href="#contact" class="hover:text-white transition">Contato</a>
+      <a href="#signup" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg transition">Começar Grátis</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="max-w-4xl mx-auto px-6 py-20 text-center">
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-6">
+      🚀 Nova Versão 3.0 Disponível
+    </span>
+    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+      Automatize sua produtividade com inteligência artificial
+    </h1>
+    <p class="text-slate-400 text-base max-w-2xl mx-auto mb-8">
+      A plataforma all-in-one para equipes modernas acompanharem métricas, automatizarem processos e alavancarem conversões.
+    </p>
+
+    <!-- Call to action buttons -->
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <a href="#pricing" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition">
+        Ver Planos e Preços
+      </a>
+      <button id="btnActionDemo" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm px-6 py-3 rounded-xl transition">
+        Agendar Demonstração
+      </button>
+    </div>
+
+    <!-- Simulator Interactive Triggers -->
+    <div class="mt-12 p-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-950/20 max-w-xl mx-auto text-left">
+      <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-vial"></i> Testes de Simulação de Fricção
+      </h3>
+      <p class="text-xs text-slate-400 mb-3">Clique nos botões abaixo para simular comportamentos problemáticos que a IA deve diagnosticar:</p>
+      <div class="flex flex-wrap gap-2">
+        <button id="btnTriggerJsError" class="bg-rose-900/60 hover:bg-rose-800 border border-rose-700/60 text-rose-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-bug"></i>
+          <span>Disparar Erro JS (Quebrar Script)</span>
+        </button>
+        <button id="btnTriggerSlowLoad" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-regular fa-clock"></i>
+          <span>Simular Botão Quebrado</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl font-bold text-white">Escolha o plano ideal para você</h2>
+      <p class="text-xs text-slate-400 mt-1">Preços transparentes, sem pegadinhas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Plan 1 -->
+      <div class="p-6 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between">
+        <div>
+          <h3 class="font-bold text-slate-200">Básico</h3>
+          <p class="text-xs text-slate-400 mt-1">Para quem está começando.</p>
+          <div class="text-2xl font-extrabold text-white mt-4">R$ 49 <span class="text-xs font-normal text-slate-400">/mês</span></div>
+        </div>
+        <button class="mt-6 w-full py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-semibold transition" onclick="selectPlan('Básico')">
+          Selecionar Básico
+        </button>
+      </div>
+
+      <!-- Plan 2 (Popular) -->
+      <div class="p-6 rounded-2xl bg-gradient-to-b from-indigo-950/60 to-slate-950 border-2 border-indigo-500/60 relative flex flex-col justify-between shadow-lg shadow-indigo-500/10">
+        <span class="absolute -top-3 right-6 bg-indigo-600 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">Mais Escolhido</span>
+        <div>
+          <h3 class="font-bold text-white">Profissional</h3>
+          <p class="text-xs text-slate-400 mt-1">Para equipes em crescimento.</p>
+          <div class="text-2xl font-extrabold text-white mt-4">R$ 149 <span class="text-xs font-normal text-slate-400">/mês</span></div>
+        </div>
+        <button class="mt-6 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition" onclick="selectPlan('Profissional')">
+          Selecionar Pro
+        </button>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="p-6 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between">
+        <div>
+          <h3 class="font-bold text-slate-200">Empresarial</h3>
+          <p class="text-xs text-slate-400 mt-1">Para grandes operações.</p>
+          <div class="text-2xl font-extrabold text-white mt-4">R$ 399 <span class="text-xs font-normal text-slate-400">/mês</span></div>
+        </div>
+        <button class="mt-6 w-full py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-semibold transition" onclick="selectPlan('Empresarial')">
+          Selecionar Enterprise
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup Form Section -->
+  <section id="signup" class="max-w-xl mx-auto px-6 py-16">
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-8 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-1">Crie sua conta</h3>
+      <p class="text-xs text-slate-400 mb-6">Inicie seu teste gratuito de 14 dias sem compromisso.</p>
+
+      <form id="signupForm" class="space-y-4" onsubmit="event.preventDefault(); alert('Formulário enviado com sucesso!');">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Nome Completo</label>
+          <input type="text" name="user_name" id="user_name" required placeholder="Seu nome" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">E-mail Comercial</label>
+          <input type="email" name="user_email" id="user_email" required placeholder="seu@email.com" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Plano Desejado</label>
+          <select name="user_plan" id="user_plan" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+            <option value="pro">Profissional (R$ 149/mês)</option>
+            <option value="basic">Básico (R$ 49/mês)</option>
+            <option value="enterprise">Empresarial (R$ 399/mês)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-lg transition shadow-md shadow-indigo-600/20">
+          Finalizar Cadastro
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Script de teste de simulação -->
+  <script>
+    function selectPlan(planName) {
+      const select = document.getElementById("user_plan");
+      if (planName === 'Básico') select.value = 'basic';
+      if (planName === 'Profissional') select.value = 'pro';
+      if (planName === 'Empresarial') select.value = 'enterprise';
+      document.getElementById("signup").scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Botão para forçar um erro de JavaScript (para testar se o tracker pega js_error)
+    document.getElementById("btnTriggerJsError").addEventListener("click", () => {
+      // Dispara erro forçado
+      throw new Error("Uncaught TypeError: Cannot read properties of undefined (reading 'checkoutToken')");
+    });
+
+    // Botão sem ação
+    document.getElementById("btnTriggerSlowLoad").addEventListener("click", () => {
+      alert("Este botão não executa nenhuma ação propositalmente (Dead Click / Fricção).");
+    });
+  </script>
+
+  <!-- INJEÇÃO DO TRACKER JS NATIVO -->
+  <script src="/tracker.js"></script>
+</body>
+</html>

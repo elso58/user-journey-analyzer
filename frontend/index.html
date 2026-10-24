@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Journey AI Analyzer - Painel Inteligente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40">
+    
+    <!-- Logo & Brand -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-route text-white text-base"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          User Journey <span class="bg-indigo-500/20 text-indigo-400 text-xs px-2 py-0.5 rounded-full border border-indigo-500/30 font-semibold">AI SaaS</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">Diagnóstico humano de abandono e conversão com IA</p>
+      </div>
+    </div>
+
+    <!-- Active Site Info & Authentication Status -->
+    <div class="flex items-center gap-3">
+      <div id="siteStatusBadge" class="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-400">Site Ativo:</span>
+        <strong id="activeSiteName" class="text-indigo-300 font-semibold truncate max-w-[200px]">Ambiente de Testes (Demo)</strong>
+        <button onclick="openAuthModal()" class="text-slate-400 hover:text-white ml-1 text-xs" title="Trocar ou autenticar chave privada">
+          <i class="fa-solid fa-key"></i>
+        </button>
+      </div>
+
+      <!-- Button: Cadastrar Novo Site -->
+      <button onclick="openRegisterModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg shadow-sm transition">
+        <i class="fa-solid fa-plus"></i>
+        <span>Cadastrar Site</span>
+      </button>
+
+      <!-- LLM Provider Selector -->
+      <div class="hidden sm:flex items-center gap-2 bg-slate-800/90 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
+        <span class="text-slate-400 font-medium"><i class="fa-solid fa-microchip mr-1"></i> IA:</span>
+        <select id="providerSelect" class="bg-transparent text-white font-medium focus:outline-none cursor-pointer">
+          <option value="gemini" class="bg-slate-800">Google Gemini</option>
+          <option value="openai" class="bg-slate-800">OpenAI</option>
+        </select>
+      </div>
+
+      <!-- Demo Simulator Button -->
+      <a href="/demo" target="_blank" class="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+        <i class="fa-solid fa-laptop-code"></i>
+        <span>Simulador</span>
+      </a>
+
+      <!-- Refresh Sessions Button -->
+      <button id="btnRefresh" title="Atualizar sessões" class="w-8 h-8 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Sidebar: Session List -->
+    <aside class="w-80 lg:w-96 border-r border-slate-800 bg-slate-900/50 flex flex-col h-[calc(100vh-57px)]">
+      <div class="p-4 border-b border-slate-800/80">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Sessões deste Site</span>
+          <span id="sessionCountBadge" class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+        </div>
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+          <input type="text" id="sessionSearch" placeholder="Filtrar por URL ou ID..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+        </div>
+      </div>
+
+      <!-- Session list container -->
+      <div id="sessionList" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-2">
+        <div class="text-center py-10 text-slate-500 text-xs">
+          <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+          <p>Carregando sessões...</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Area: Session Details & AI Analysis -->
+    <main class="flex-1 flex flex-col h-[calc(100vh-57px)] overflow-hidden bg-slate-950">
+      
+      <!-- Empty State (When no session is selected) -->
+      <div id="emptyState" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 mb-4 shadow-inner">
+          <i class="fa-solid fa-chart-line text-2xl"></i>
+        </div>
+        <h3 class="text-base font-semibold text-slate-300">Nenhuma sessão selecionada</h3>
+        <p class="text-xs text-slate-500 max-w-sm mt-1 mb-5">Selecione uma sessão à esquerda para ver o parecer da IA com comportamento observado e recomendações de melhoria.</p>
+        <div class="flex items-center gap-3">
+          <button onclick="openRegisterModal()" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow-md shadow-emerald-600/20">
+            <i class="fa-solid fa-plus"></i>
+            <span>Cadastrar Novo Site</span>
+          </button>
+          <a href="/demo" target="_blank" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium px-4 py-2 rounded-lg transition">
+            <i class="fa-solid fa-play"></i>
+            <span>Testar no Simulador</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Session Detail Content -->
+      <div id="sessionContent" class="flex-1 flex flex-col hidden overflow-hidden">
+        
+        <!-- Session Header Bar -->
+        <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Sessão:</span>
+              <span id="currentSid" class="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/60 border border-indigo-800/60 px-2 py-0.5 rounded select-all"></span>
+              <button onclick="copyCurrentSid()" class="text-slate-500 hover:text-slate-300 text-xs ml-1" title="Copiar ID"><i class="fa-regular fa-copy"></i></button>
+            </div>
+            <div class="flex items-center gap-4 mt-1.5 text-xs text-slate-400">
+              <span id="currentUrl" class="truncate max-w-md text-slate-300"><i class="fa-solid fa-link text-slate-500 mr-1"></i> -</span>
+              <span><i class="fa-solid fa-bolt text-slate-500 mr-1"></i> <b id="currentEventCount" class="text-slate-200">0</b> eventos</span>
+            </div>
+          </div>
+
+          <!-- Analyze Trigger Button -->
+          <button id="btnAnalyze" class="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-lg shadow-indigo-600/20 transition active:scale-95 disabled:opacity-50">
+            <i class="fa-solid fa-brain"></i>
+            <span>Gerar Parecer com IA</span>
+          </button>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-slate-800 bg-slate-900/20 px-4">
+          <button id="tabBtnReport" class="px-4 py-2.5 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice text-indigo-400"></i>
+            <span>Parecer da IA</span>
+          </button>
+          <button id="tabBtnTimeline" class="px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Linha do Tempo de Eventos</span>
+          </button>
+        </div>
+
+        <!-- Tab Body Container -->
+        <div class="flex-1 overflow-y-auto custom-scroll p-6">
+          
+          <!-- TAB 1: AI Report -->
+          <div id="tabReport" class="space-y-6">
+            
+            <!-- Not Analyzed Banner -->
+            <div id="reportPlaceholder" class="p-8 border border-dashed border-slate-800 rounded-xl text-center bg-slate-900/20">
+              <div class="w-12 h-12 rounded-full bg-indigo-950/60 border border-indigo-800/60 text-indigo-400 flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-slate-200">Nenhum parecer gerado ainda</h4>
+              <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">Clique no botão "Gerar Parecer com IA" para que o modelo interprete a jornada, identifique problemas e sugira melhorias em linguagem simples.</p>
+              <button onclick="triggerAnalyze()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition">
+                Gerar Agora
+              </button>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div id="reportLoading" class="hidden p-12 text-center">
+              <div class="relative w-16 h-16 mx-auto mb-4">
+                <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                <i class="fa-solid fa-brain absolute inset-0 flex items-center justify-center text-indigo-400 text-lg"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-slate-200">A IA está analisando a experiência do visitante...</h4>
+              <p class="text-xs text-slate-500 mt-1">Identificando o que o visitante tentou fazer e onde ele encontrou dificuldades.</p>
+            </div>
+
+            <!-- AI Output Card View -->
+            <div id="reportContainer" class="hidden space-y-5">
+              
+              <!-- Report Meta Header -->
+              <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
+                    <i class="fa-solid fa-circle-check text-lg"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-100">Diagnóstico Concluído</h3>
+                    <p id="reportProviderBadge" class="text-xs text-slate-400">Modelo utilizado: Google Gemini</p>
+                  </div>
+                </div>
+                <div>
+                  <span id="reportConfidenceBadge" class="text-xs font-semibold px-3 py-1 rounded-full border"></span>
+                </div>
+              </div>
+
+              <!-- Comportamento Observado -->
+              <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2 mb-2">
+                  <i class="fa-solid fa-eye text-cyan-400"></i>
+                  <span>Comportamento Observado (O que aconteceu)</span>
+                </h4>
+                <p id="reportObserved" class="text-sm text-slate-200 leading-relaxed"></p>
+              </div>
+
+              <!-- Possíveis Causas e Evidências Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                <!-- Possíveis Causas -->
+                <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+                  <h4 class="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Possíveis Causas de Abandono (Hipóteses)</span>
+                  </h4>
+                  <ul id="reportCauses" class="space-y-2 text-sm text-slate-300"></ul>
+                </div>
+
+                <!-- Evidências -->
+                <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+                  <h4 class="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    <span>Evidências Encontradas na Navegação</span>
+                  </h4>
+                  <ul id="reportEvidence" class="space-y-2 text-sm text-slate-300"></ul>
+                </div>
+              </div>
+
+              <!-- Recomendações de Melhoria -->
+              <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-2 mb-3">
+                  <i class="fa-solid fa-clipboard-check"></i>
+                  <span>Recomendações Práticas para Melhorar Conversão</span>
+                </h4>
+                <ul id="reportRecommendations" class="space-y-2 text-sm text-slate-200"></ul>
+              </div>
+
+              <!-- Raw JSON Details Collapse -->
+              <details class="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4">
+                <summary class="text-xs text-slate-400 font-mono cursor-pointer hover:text-slate-200">
+                  Ver resposta técnica em JSON
+                </summary>
+                <pre id="reportRawJson" class="mt-3 p-3 bg-slate-950 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto"></pre>
+              </details>
+            </div>
+          </div>
+
+          <!-- TAB 2: Timeline of Events -->
+          <div id="tabTimeline" class="hidden space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <span class="text-xs font-medium text-slate-400">Sequência cronológica da navegação</span>
+              <span id="timelineCount" class="text-xs text-slate-400"></span>
+            </div>
+            <div id="timelineEvents" class="space-y-3 pt-2"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Cadastrar Novo Site -->
+  <div id="modalRegister" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+      <button onclick="closeRegisterModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Step 1: Input URL -->
+      <div id="registerStepForm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-globe text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Cadastrar Novo Site</h3>
+            <p class="text-xs text-slate-400">Monitore todas as páginas e gere sua Chave Privada</p>
+          </div>
+        </div>
+
+        <form id="formRegisterSite" class="space-y-4" onsubmit="handleCreateSite(event)">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">URL Principal do Site</label>
+            <input type="text" id="regSiteUrl" required placeholder="Ex: https://minhaloja.com.br" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            <span class="text-[11px] text-slate-500 mt-1 block">O rastreador cobrirá automaticamente todas as páginas internas deste domínio.</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nome do Site (Opcional)</label>
+            <input type="text" id="regSiteName" placeholder="Ex: Minha Loja Virtual" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" id="btnSubmitRegister" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-lg transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-key"></i>
+              <span>Gerar Código e Chave Privada</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 2: Generated Keys & Installation Instructions -->
+      <div id="registerStepSuccess" class="hidden space-y-4">
+        <div class="flex items-center gap-2 text-emerald-400 text-sm font-bold">
+          <i class="fa-solid fa-circle-check text-base"></i>
+          <span>Site Cadastrado com Sucesso!</span>
+        </div>
+
+        <!-- Chave Privada -->
+        <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/50">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-lock"></i> Sua Chave Privada de Acesso
+            </span>
+            <span class="text-[10px] text-amber-300/80 bg-amber-900/60 px-2 py-0.5 rounded font-medium">Somente Você</span>
+          </div>
+          <p class="text-xs text-slate-300 mb-2">Guarde esta chave. É a senha com a qual você acessa as gravações deste site:</p>
+          <div class="flex items-center gap-2">
+            <input type="text" id="createdSecretKey" readonly class="w-full font-mono text-xs bg-slate-950 border border-amber-800/80 text-amber-300 rounded px-2.5 py-1.5 select-all">
+            <button onclick="copyToClipboard('createdSecretKey')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded font-medium shrink-0">Copiar</button>
+          </div>
+        </div>
+
+        <!-- Código para Colar no Site -->
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+          <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1 mb-1">
+            <i class="fa-solid fa-code text-indigo-400"></i> Código de Rastreamento (Todas as Páginas)
+          </span>
+          <p class="text-xs text-slate-400 mb-2">Cole antes do fechamento de &lt;/head&gt; do seu site (WordPress, Shopify, etc.):</p>
+          <div class="relative">
+            <pre id="createdTrackerCode" class="text-xs font-mono text-indigo-300 bg-slate-900 p-3 rounded-lg overflow-x-auto select-all border border-slate-800"></pre>
+            <button onclick="copyTrackerCode()" class="absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-white text-[11px] px-2 py-1 rounded">Copiar</button>
+          </div>
+        </div>
+
+        <button onclick="activateAndEnterSite()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-lg transition shadow-md shadow-indigo-600/20">
+          Abrir Painel Deste Site Agora &rarr;
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Acessar com Chave Privada -->
+  <div id="modalAuth" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-indigo-950/60 border border-indigo-800/60 text-indigo-400 flex items-center justify-center">
+          <i class="fa-solid fa-shield-halved text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">Acessar com Chave Privada</h3>
+          <p class="text-xs text-slate-400">Digite sua chave para visualizar as sessões do seu site</p>
+        </div>
+      </div>
+
+      <form id="formAuthKey" class="space-y-4" onsubmit="handleAuthSite(event)">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Chave Secreta (Secret Key)</label>
+          <input type="text" id="inputSecretKey" required placeholder="Ex: sec_a1B2c3D4..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="pt-1 flex gap-2">
+          <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg transition">
+            Entrar no Site
+          </button>
+          <button type="button" onclick="switchToDefaultSite()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg transition">
+            Modo Demo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentSessionId = null;
+    let sessionsCache = [];
+    let currentSite = JSON.parse(localStorage.getItem("uj_current_site") || "null");
+    let newlyCreatedSite = null;
+
+    // Elements
+    const sessionListEl = document.getElementById("sessionList");
+    const sessionCountBadge = document.getElementById("sessionCountBadge");
+    const sessionSearch = document.getElementById("sessionSearch");
+    const emptyState = document.getElementById("emptyState");
+    const sessionContent = document.getElementById("sessionContent");
+    const currentSidEl = document.getElementById("currentSid");
+    const currentUrlEl = document.getElementById("currentUrl");
+    const currentEventCountEl = document.getElementById("currentEventCount");
+    const btnRefresh = document.getElementById("btnRefresh");
+    const btnAnalyze = document.getElementById("btnAnalyze");
+    const providerSelect = document.getElementById("providerSelect");
+    const activeSiteName = document.getElementById("activeSiteName");
+
+    // Modals
+    const modalRegister = document.getElementById("modalRegister");
+    const modalAuth = document.getElementById("modalAuth");
+    const registerStepForm = document.getElementById("registerStepForm");
+    const registerStepSuccess = document.getElementById("registerStepSuccess");
+    const createdSecretKey = document.getElementById("createdSecretKey");
+    const createdTrackerCode = document.getElementById("createdTrackerCode");
+
+    // Tabs
+    const tabBtnReport = document.getElementById("tabBtnReport");
+    const tabBtnTimeline = document.getElementById("tabBtnTimeline");
+    const tabReport = document.getElementById("tabReport");
+    const tabTimeline = document.getElementById("tabTimeline");
+
+    // Report items
+    const reportPlaceholder = document.getElementById("reportPlaceholder");
+    const reportLoading = document.getElementById("reportLoading");
+    const reportContainer = document.getElementById("reportContainer");
+    const reportObserved = document.getElementById("reportObserved");
+    const reportCauses = document.getElementById("reportCauses");
+    const reportEvidence = document.getElementById("reportEvidence");
+    const reportConfidenceBadge = document.getElementById("reportConfidenceBadge");
+    const reportRecommendations = document.getElementById("reportRecommendations");
+    const reportProviderBadge = document.getElementById("reportProviderBadge");
+    const reportRawJson = document.getElementById("reportRawJson");
+    const timelineEvents = document.getElementById("timelineEvents");
+    const timelineCount = document.getElementById("timelineCount");
+
+    // Initialize Site view
+    function updateSiteBadge() {
+      if (currentSite && currentSite.secret_key) {
+        activeSiteName.innerText = `${currentSite.name || currentSite.url}`;
+        activeSiteName.title = `Chave: ${currentSite.secret_key}`;
+      } else {
+        activeSiteName.innerText = "Ambiente de Testes (Demo)";
+      }
+    }
+
+    // Switch Tabs
+    tabBtnReport.addEventListener("click", () => switchTab("report"));
+    tabBtnTimeline.addEventListener("click", () => switchTab("timeline"));
+
+    function switchTab(tab) {
+      if (tab === "report") {
+        tabBtnReport.className = "px-4 py-2.5 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2";
+        tabBtnTimeline.className = "px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+        tabReport.classList.remove("hidden");
+        tabTimeline.classList.add("hidden");
+      } else {
+        tabBtnTimeline.className = "px-4 py-2.5 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2";
+        tabBtnReport.className = "px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+        tabTimeline.classList.remove("hidden");
+        tabReport.classList.add("hidden");
+      }
+    }
+
+    // Load Sessions (filtered by secret key if authenticated)
+    async function loadSessions() {
+      try {
+        let url = "/api/sessions";
+        if (currentSite && currentSite.secret_key) {
+          url += `?secret_key=${encodeURIComponent(currentSite.secret_key)}`;
+        }
+        const res = await fetch(url);
+        const data = await res.json();
+        sessionsCache = data;
+        renderSessions(data);
+      } catch (err) {
+        sessionListEl.innerHTML = `<div class="p-4 text-center text-xs text-rose-400">Falha ao carregar sessões. Verifique o servidor.</div>`;
+      }
+    }
+
+    function renderSessions(list) {
+      const q = (sessionSearch.value || "").toLowerCase();
+      const filtered = list.filter(s => s.session_id.toLowerCase().includes(q) || (s.last_url && s.last_url.toLowerCase().includes(q)));
+      
+      sessionCountBadge.innerText = filtered.length;
+      if (filtered.length === 0) {
+        sessionListEl.innerHTML = `
+          <div class="p-6 text-center text-xs text-slate-500">
+            <p>Nenhuma sessão gravada para este site ainda.</p>
+            <p class="text-[11px] text-slate-600 mt-1">Navegue no site com o código instalado para gerar eventos.</p>
+          </div>
+        `;
+        return;
+      }
+
+      sessionListEl.innerHTML = filtered.map(s => {
+        const isSelected = s.session_id === currentSessionId;
+        const timeFormatted = s.last_active ? new Date(s.last_active).toLocaleTimeString() : "--:--";
+        const shortId = s.session_id.length > 18 ? s.session_id.slice(0, 18) + "..." : s.session_id;
+        
+        return `
+          <div onclick="selectSession('${s.session_id}')" class="p-3 rounded-xl border cursor-pointer transition ${
+            isSelected 
+              ? 'bg-indigo-950/40 border-indigo-500/60 text-white shadow-sm' 
+              : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/60 text-slate-300'
+          }">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-mono text-xs font-semibold truncate ${isSelected ? 'text-indigo-400' : 'text-slate-200'}">${shortId}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">${s.events} ev</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span class="truncate max-w-[180px]">${s.last_url ? s.last_url.replace(location.origin, '') : '/'}</span>
+              <span>${timeFormatted}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    sessionSearch.addEventListener("input", () => renderSessions(sessionsCache));
+    btnRefresh.addEventListener("click", () => {
+      btnRefresh.querySelector("i").classList.add("fa-spin");
+      loadSessions().finally(() => btnRefresh.querySelector("i").classList.remove("fa-spin"));
+    });
+
+    // Select a session
+    async function selectSession(sid) {
+      currentSessionId = sid;
+      renderSessions(sessionsCache);
+      emptyState.classList.add("hidden");
+      sessionContent.classList.remove("hidden");
+
+      reportContainer.classList.add("hidden");
+      reportLoading.classList.add("hidden");
+      reportPlaceholder.classList.remove("hidden");
+
+      currentSidEl.innerText = sid;
+
+      try {
+        const res = await fetch(`/api/sessions/${sid}`);
+        const timeline = await res.json();
+        currentEventCountEl.innerText = timeline.length;
+        timelineCount.innerText = `${timeline.length} eventos registrados`;
+        
+        const lastEv = timeline[timeline.length - 1];
+        if (lastEv && lastEv.data && lastEv.data.url) {
+          currentUrlEl.innerHTML = `<i class="fa-solid fa-link text-slate-500 mr-1"></i> ${lastEv.data.url}`;
+        }
+
+        renderTimeline(timeline);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderTimeline(events) {
+      if (!events || events.length === 0) {
+        timelineEvents.innerHTML = `<p class="text-xs text-slate-500">Nenhum evento registrado.</p>`;
+        return;
+      }
+
+      timelineEvents.innerHTML = events.map((item) => {
+        const type = item.type;
+        const data = item.data || {};
+        const time = new Date(item.ts).toLocaleTimeString();
+
+        let badge = { icon: "fa-circle", color: "bg-slate-700 text-slate-300", label: type };
+        let desc = "";
+
+        switch (type) {
+          case "pageview":
+            badge = { icon: "fa-file-lines", color: "bg-blue-950 text-blue-400 border border-blue-800", label: "Pageview" };
+            desc = `Acessou página: <strong class="text-slate-200">${data.title || data.url || '/'}</strong>`;
+            break;
+          case "click":
+            badge = { icon: "fa-arrow-pointer", color: "bg-purple-950 text-purple-400 border border-purple-800", label: "Clique" };
+            const tag = data.tag ? `<span class="font-mono text-purple-300">&lt;${data.tag}&gt;</span>` : "";
+            const text = data.text ? `"${data.text}"` : (data.id ? `#${data.id}` : "");
+            desc = `Clicou em ${tag} <span class="text-slate-300">${text}</span>`;
+            break;
+          case "scroll":
+            badge = { icon: "fa-arrows-up-down", color: "bg-slate-800 text-slate-300 border border-slate-700", label: "Rolagem" };
+            desc = `Rolagem de página atingiu <strong class="text-slate-200">${data.depth}%</strong>`;
+            break;
+          case "form_focus":
+            badge = { icon: "fa-keyboard", color: "bg-amber-950 text-amber-400 border border-amber-800", label: "Foco Campo" };
+            desc = `Iniciou interação no campo: <strong class="text-amber-300 font-mono">${data.field}</strong>`;
+            break;
+          case "form_submit":
+            badge = { icon: "fa-paper-plane", color: "bg-emerald-950 text-emerald-400 border border-emerald-800", label: "Envio Form" };
+            desc = `Submeteu formulário: <strong class="text-emerald-300 font-mono">${data.form}</strong>`;
+            break;
+          case "js_error":
+            badge = { icon: "fa-triangle-exclamation", color: "bg-rose-950 text-rose-400 border border-rose-800", label: "Erro JS" };
+            desc = `<span class="text-rose-300 font-mono">${data.message}</span> <span class="text-xs text-slate-500">(${data.source || 'inline'})</span>`;
+            break;
+          case "page_leave":
+            badge = { icon: "fa-right-from-bracket", color: "bg-red-950 text-red-400 border border-red-800", label: "Saída" };
+            desc = `Usuário saiu da página. Scroll máx: ${data.maxScroll || 0}%`;
+            break;
+          default:
+            desc = JSON.stringify(data);
+        }
+
+        return `
+          <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 transition">
+            <span class="text-[10px] font-mono text-slate-500 pt-0.5">${time}</span>
+            <span class="text-xs px-2 py-0.5 rounded font-medium flex items-center gap-1.5 shrink-0 ${badge.color}">
+              <i class="fa-solid ${badge.icon} text-[10px]"></i>
+              ${badge.label}
+            </span>
+            <div class="text-xs text-slate-300 flex-1 leading-relaxed">${desc}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Trigger AI analysis
+    async function triggerAnalyze() {
+      if (!currentSessionId) return;
+
+      reportPlaceholder.classList.add("hidden");
+      reportContainer.classList.add("hidden");
+      reportLoading.classList.remove("hidden");
+      btnAnalyze.disabled = true;
+
+      const provider = providerSelect.value;
+
+      try {
+        const res = await fetch(`/api/analyze/${currentSessionId}?provider=${provider}`, { method: "POST" });
+        const data = await res.json();
+
+        reportLoading.classList.add("hidden");
+        btnAnalyze.disabled = false;
+
+        if (data.error && !data.comportamento_observado) {
+          alert(`Aviso: ${data.error}`);
+          reportPlaceholder.classList.remove("hidden");
+          return;
+        }
+
+        reportContainer.classList.remove("hidden");
+        reportProviderBadge.innerText = `Modelo: ${data.provider_used || provider.toUpperCase()}`;
+
+        const conf = (data.nivel_confianca || "medio").toLowerCase();
+        let confClass = "bg-amber-950/60 text-amber-400 border-amber-800/60";
+        if (conf === "alto") confClass = "bg-emerald-950/60 text-emerald-400 border-emerald-800/60";
+        if (conf === "baixo") confClass = "bg-slate-800 text-slate-400 border-slate-700";
+        reportConfidenceBadge.className = `text-xs font-semibold px-3 py-1 rounded-full border ${confClass}`;
+        reportConfidenceBadge.innerHTML = `<i class="fa-solid fa-gauge mr-1"></i> Confiança: ${conf.toUpperCase()}`;
+
+        reportObserved.innerText = data.comportamento_observado || "Não especificado";
+
+        function formatItem(item) {
+          if (typeof item === 'object' && item !== null) {
+            return item.hipotese || item.descricao || item.texto || item.acao || JSON.stringify(item);
+          }
+          return item;
+        }
+
+        const causes = Array.isArray(data.possiveis_causas) ? data.possiveis_causas : [data.possiveis_causas];
+        reportCauses.innerHTML = causes.map(c => `
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 mt-1">•</span>
+            <span>${formatItem(c)}</span>
+          </li>
+        `).join("");
+
+        const evidences = Array.isArray(data.evidencias) ? data.evidencias : [data.evidencias];
+        reportEvidence.innerHTML = evidences.map(e => `
+          <li class="flex items-start gap-2">
+            <span class="text-indigo-400 mt-1">•</span>
+            <span>${formatItem(e)}</span>
+          </li>
+        `).join("");
+
+        const recs = Array.isArray(data.recomendacoes) ? data.recomendacoes : [data.recomendacoes];
+        reportRecommendations.innerHTML = recs.map(r => `
+          <li class="flex items-start gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
+            <i class="fa-solid fa-check text-emerald-400 mt-1 text-xs"></i>
+            <span>${formatItem(r)}</span>
+          </li>
+        `).join("");
+
+        reportRawJson.innerText = JSON.stringify(data, null, 2);
+        switchTab("report");
+
+      } catch (err) {
+        reportLoading.classList.add("hidden");
+        btnAnalyze.disabled = false;
+        alert("Erro ao comunicar com a API de análise.");
+        console.error(err);
+      }
+    }
+
+    btnAnalyze.addEventListener("click", triggerAnalyze);
+
+    function copyCurrentSid() {
+      if (currentSessionId) {
+        navigator.clipboard.writeText(currentSessionId);
+        alert("Session ID copiado!");
+      }
+    }
+
+    // Modal Handlers
+    function openRegisterModal() {
+      registerStepForm.classList.remove("hidden");
+      registerStepSuccess.classList.add("hidden");
+      document.getElementById("regSiteUrl").value = "";
+      document.getElementById("regSiteName").value = "";
+      modalRegister.classList.remove("hidden");
+    }
+
+    function closeRegisterModal() {
+      modalRegister.classList.add("hidden");
+    }
+
+    function openAuthModal() {
+      modalAuth.classList.remove("hidden");
+    }
+
+    function closeAuthModal() {
+      modalAuth.classList.add("hidden");
+    }
+
+    async function handleCreateSite(e) {
+      e.preventDefault();
+      const url = document.getElementById("regSiteUrl").value.trim();
+      const name = document.getElementById("regSiteName").value.trim();
+
+      const btn = document.getElementById("btnSubmitRegister");
+      btn.disabled = true;
+      btn.innerText = "Criando códigos...";
+
+      try {
+        const res = await fetch("/api/sites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, name })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-key"></i><span>Gerar Código e Chave Privada</span>`;
+
+        if (data.ok) {
+          newlyCreatedSite = data;
+          createdSecretKey.value = data.secret_key;
+          createdTrackerCode.innerText = data.tracker_code;
+          registerStepForm.classList.add("hidden");
+          registerStepSuccess.classList.remove("hidden");
+        } else {
+          alert("Erro ao cadastrar site.");
+        }
+      } catch (err) {
+        btn.disabled = false;
+        alert("Erro de conexão ao cadastrar site.");
+      }
+    }
+
+    function copyTrackerCode() {
+      if (newlyCreatedSite) {
+        navigator.clipboard.writeText(newlyCreatedSite.tracker_code);
+        alert("Código de rastreamento copiado!");
+      }
+    }
+
+    function copyToClipboard(elementId) {
+      const el = document.getElementById(elementId);
+      el.select();
+      navigator.clipboard.writeText(el.value);
+      alert("Copiado com sucesso!");
+    }
+
+    function activateAndEnterSite() {
+      if (newlyCreatedSite) {
+        currentSite = {
+          site_id: newlyCreatedSite.site_id,
+          name: newlyCreatedSite.name,
+          url: newlyCreatedSite.url,
+          secret_key: newlyCreatedSite.secret_key
+        };
+        localStorage.setItem("uj_current_site", JSON.stringify(currentSite));
+        updateSiteBadge();
+        closeRegisterModal();
+        loadSessions();
+      }
+    }
+
+    async function handleAuthSite(e) {
+      e.preventDefault();
+      const key = document.getElementById("inputSecretKey").value.trim();
+      if (!key) return;
+
+      try {
+        const res = await fetch("/api/sites/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ secret_key: key })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          currentSite = data.site;
+          localStorage.setItem("uj_current_site", JSON.stringify(currentSite));
+          updateSiteBadge();
+          closeAuthModal();
+          loadSessions();
+          alert(`Conectado com sucesso ao site: ${currentSite.name}!`);
+        } else {
+          alert(data.error || "Chave secreta inválida.");
+        }
+      } catch (err) {
+        alert("Erro ao validar chave secreta.");
+      }
+    }
+
+    function switchToDefaultSite() {
+      currentSite = null;
+      localStorage.removeItem("uj_current_site");
+      updateSiteBadge();
+      closeAuthModal();
+      loadSessions();
+      alert("Retornado ao Ambiente Padrão de Testes.");
+    }
+
+    // Inicialização
+    updateSiteBadge();
+    loadSessions();
+    setInterval(loadSessions, 6000);
+  </script>
+</body>
+</html>
