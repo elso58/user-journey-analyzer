@@ -23,7 +23,8 @@ Analise os eventos de navegação e monte um parecer em JSON com estes campos:
 Regras de ouro:
 - PROIBIDO usar termos técnicos como DOM, SVG, âncora, elemento, payload, tag, classe CSS, preflight, etc.
 - Fale sempre como se estivesse explicando para o seu tio que tem uma loja.
-- Diferencie o que é certeza do que é só palpite."""
+- Diferencie o que é certeza do que é só palpite.
+- Se vir cliques em 'svg' ou 'icone', NUNCA fale a palavra 'SVG'. Explique que o visitante clicou em um ícone visual (como abrir/fechar as dúvidas, botão de fechar ou ícone de ajuda)."""
 
 async def analyze_with_gemini(timeline: list, api_key: str, preferred_model: str = "gemini-3.5-flash-lite"):
     from google import genai
