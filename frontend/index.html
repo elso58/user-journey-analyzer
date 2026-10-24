@@ -649,11 +649,12 @@
 
         reportObserved.innerText = data.comportamento_observado || "Não especificado";
 
-        function formatItem(item) {
-          if (typeof item === 'object' && item !== null) {
-            return item.hipotese || item.descricao || item.texto || item.acao || JSON.stringify(item);
+                function formatItem(item) {
+          if (!item) return "";
+          if (typeof item === 'object') {
+            return item.evidencia || item.ponto || item.hipotese || item.descricao || item.texto || item.acao || Object.values(item).join(" - ");
           }
-          return item;
+          return String(item);
         }
 
         const causes = Array.isArray(data.possiveis_causas) ? data.possiveis_causas : [data.possiveis_causas];
