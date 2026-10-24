@@ -23,20 +23,23 @@ app = FastAPI(title="User Journey Analyzer")
 
 @app.middleware("http")
 async def cors_handler(request: Request, call_next):
-    origin = request.headers.get("origin")
+    origin = request.headers.get("origin") or "*"
     if request.method == "OPTIONS":
-        response = JSONResponse(content={"ok": True})
-    else:
-        response = await call_next(request)
+        return JSONResponse(
+            content={"ok": True},
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+            }
+        )
 
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-    else:
-        response.headers["Access-Control-Allow-Origin"] = "*"
-
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
     return response
 
 def db():
