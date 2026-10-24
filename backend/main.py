@@ -188,6 +188,25 @@ def sessions(secret_key: Optional[str] = Query(None)):
         for r in rows
     ]
 
+# Rota para limpar o histórico de sessões
+@app.delete("/api/sessions/clear")
+def clear_sessions(secret_key: Optional[str] = Query(None)):
+    c = db()
+    target_site_id = "default"
+    
+    if secret_key and secret_key.strip() != "default":
+        row = c.execute("SELECT site_id FROM sites WHERE secret_key=?", (secret_key.strip(),)).fetchone()
+        if row:
+            target_site_id = row[0]
+        else:
+            c.close()
+            return {"ok": False, "error": "Chave inválida"}
+            
+    c.execute("DELETE FROM events WHERE site_id=?", (target_site_id,))
+    c.commit()
+    c.close()
+    return {"ok": True, "message": "Histórico limpo com sucesso!"}
+
 @app.get("/api/sessions/{sid}")
 def session_detail(sid: str):
     c = db()
