@@ -46,11 +46,39 @@
 
   enqueue({ type: "pageview", title: document.title });
 
-  document.addEventListener("click", function (ev) {
-    const t = ev.target;
-    enqueue({ type: "click", tag: t.tagName, id: t.id || null, class: t.className || null, text: (t.innerText || "").slice(0, 80) });
-  }, true);
+    document.addEventListener("click", function (ev) {
+    let t = ev.target;
+    let tag = t.tagName ? t.tagName.toLowerCase() : "";
+    let isSvg = tag === "svg" || (t.closest && t.closest("svg"));
+    let iconName = "";
 
+    // Se clicou em um SVG ou dentro dele, descobre qual é o ícone
+    if (isSvg) {
+      let svgEl = tag === "svg" ? t : t.closest("svg");
+      let parentBtn = svgEl.closest("button, a, summary, [role=button]");
+      
+      // Tenta achar pelo texto do botão pai, aria-label, title ou classe
+      let label = (svgEl.getAttribute("aria-label") || svgEl.getAttribute("title") || (parentBtn && (parentBtn.innerText || parentBtn.getAttribute("aria-label"))) || "").trim();
+      let cls = (svgEl.className && typeof svgEl.className === "string" ? svgEl.className : "") + " " + (parentBtn && parentBtn.className ? parentBtn.className : "");
+      
+      if (/arrow|chevron|down|caret/i.test(cls)) iconName = "setinha de expandir/recolher";
+      else if (/close|times|xmark/i.test(cls)) iconName = "botão de fechar (X)";
+      else if (/whatsapp/i.test(cls)) iconName = "ícone do WhatsApp";
+      else if (/cart|bag|shop/i.test(cls)) iconName = "ícone de carrinho/compra";
+      else if (/menu|bars|hamb/i.test(cls)) iconName = "ícone de menu";
+      else if (label) iconName = label.slice(0, 40);
+      else iconName = "ícone interativo";
+    }
+
+    let text = iconName ? `(Ícone: ${iconName})` : (t.innerText || "").slice(0, 80);
+    enqueue({ 
+      type: "click", 
+      tag: isSvg ? "icone" : t.tagName, 
+      id: t.id || null, 
+      class: (t.className && typeof t.className === "string") ? t.className.slice(0, 60) : null, 
+      text: text 
+    });
+  }, true);
   let maxScroll = 0;
   window.addEventListener("scroll", function () {
     const h = document.documentElement;
