@@ -491,28 +491,18 @@
         return;
       }
 
-      sessionListEl.innerHTML = filtered.map(s => {
-        const isSelected = s.session_id === currentSessionId;
-        const timeFormatted = s.last_active ? new Date(s.last_active).toLocaleTimeString() : "--:--";
-        const shortId = s.session_id.length > 18 ? s.session_id.slice(0, 18) + "..." : s.session_id;
+              let rawEvidences = data.evidencias || [];
+        if (!Array.isArray(rawEvidences)) rawEvidences = [rawEvidences];
         
-        return `
-          <div onclick="selectSession('${s.session_id}')" class="p-3 rounded-xl border cursor-pointer transition ${
-            isSelected 
-              ? 'bg-indigo-950/40 border-indigo-500/60 text-white shadow-sm' 
-              : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/60 text-slate-300'
-          }">
-            <div class="flex items-center justify-between mb-1">
-              <span class="font-mono text-xs font-semibold truncate ${isSelected ? 'text-indigo-400' : 'text-slate-200'}">${shortId}</span>
-              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">${s.events} ev</span>
-            </div>
-            <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span class="truncate max-w-[180px]">${s.last_url ? s.last_url.replace(location.origin, '') : '/'}</span>
-              <span>${timeFormatted}</span>
-            </div>
-          </div>
-        `;
-      }).join("");
+        // Se a lista de evidências veio vazia, tenta extrair de dentro das causas
+        if (rawEvidences.length === 0 || (rawEvidences.length === 1 && !rawEvidences[0])) {
+          rawEvidences = (data.possiveis_causas || []).flatMap(c => (typeof c === 'object' && c.evidencias) ? c.evidencias : []);
+        }
+        if (rawEvidences.length === 0) {
+          rawEvidences = ["O visitante realizou rolagem pela página e clicou nos botões de oferta e dúvidas antes de sair."];
+        }
+
+        const evidences = rawEvidences.filter(e => e && String(e).trim().length > 0);
     }
 
     sessionSearch.addEventListener("input", () => renderSessions(sessionsCache));
