@@ -197,9 +197,18 @@ def session_detail(sid: str):
 
 @app.post("/api/analyze/{sid}")
 async def analyze(sid: str, provider: Optional[str] = Query(None)):
-    from analyzer import analyze_session
-    result = await analyze_session(sid, provider=provider)
-    return result
+    try:
+        try:
+            from backend.analyzer import analyze_session
+        except ImportError:
+            from analyzer import analyze_session
+
+        result = await analyze_session(sid, provider=provider)
+        return result
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.get("/tracker.js")
 def get_tracker_script():
